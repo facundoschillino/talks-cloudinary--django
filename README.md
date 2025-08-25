@@ -19,22 +19,10 @@ Para instalar el paquete usando **uv**:
 uv add django-cloudinary-storage
 ```
 
-En caso de necesitar manejar videos también instalamos:
-
-```bash
-uv add django-cloudinary-storage[video]
-```
-
 Para manejar imágenes en nuestro modelo mediante `ImageField`, debemos instalar **Pillow**:
 
 ```bash
 uv add Pillow
-```
-
-Guardamos nuestras nuevas dependencias en nuestro `requirements.txt`:
-
-```bash
-uv pip freeze > requirements.txt
 ```
 
 ---
@@ -54,7 +42,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-Si estás usando **Django 5.1** o posteriores, necesitaremos definir un diccionario `STORAGES` en `settings.py`:
+Si estás usando **Django 5.1** o posteriores, necesitaremos definir un diccionario `STORAGES` en las settings de producción de nuestro `settings.py`:
 
 ```python
 STORAGES = {
@@ -62,7 +50,7 @@ STORAGES = {
     'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage' 
   },
   'staticfiles': {                                                 
-    'BACKEND': 'django.core.files.storage.FileSystemStorage'       # Default storage que usa Django
+    'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'    
   },
 }
 ```
@@ -72,20 +60,19 @@ Y agregamos `MEDIA_URL` a nuestro `settings.py`:
 ```python
 MEDIA_URL = '/media/'  
 ```
-
 Con esto ya definimos lo necesario para manejar archivos de imagen, video o "raw".
 
 ---
 
 ## Credenciales de Cloudinary
 
-Luego, vamos a definir nuestras credenciales de Cloudinary en `settings.py`:
+Luego, vamos a definir nuestras credenciales de Cloudinary en  `settings.py`:
 
 ```python
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get("CLOUD_NAME"),
-    'API_KEY': os.environ.get("API_KEY"),
-    'API_SECRET': os.environ.get("API_SECRET")
+    'CLOUD_NAME': os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    'API_KEY': os.environ.get("CLOUDINARY_API_KEY"),
+    'API_SECRET': os.environ.get("CLOUDINARY_API_SECRET")
 }
 ```
 
@@ -99,7 +86,30 @@ Ir a la pestaña **API keys**:
 
 Y luego definir las variables en Render:
 
-<img width="1277" height="168" alt="image" src="https://github.com/user-attachments/assets/0eaf8fe2-70a3-4cf7-af67-1ea6af6942a2" />
+<img width="1279" height="219" alt="image" src="https://github.com/user-attachments/assets/7dc09857-2838-4ffb-902e-e4a374721223" />
+
+---
+
+Finalmente, nuestra configuración de produccion deberia verse como:
+
+```python
+if 'RENDER' in os.environ:
+    print("USING RENDER.COM SETTINGS!")
+    DEBUG = False
+    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME')]
+    DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+    MIDDLEWARE.insert(MIDDLEWARE.index('django.middleware.security.SecurityMiddleware') + 1,
+                      'whitenoise.middleware.WhiteNoiseMiddleware')
+    MEDIA_URL= "/media/"
+    STORAGES = {
+        "default":
+                {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
+
+        "staticfiles":
+                {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+```
 
 ---
 
@@ -140,7 +150,7 @@ from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 class Noticia(models.Model):
     titulo = models.CharField(max_length=100)
-    pruebas_en_pdf = models.FileField(upload_to='raw/', blank=True, storage=RawMediaCloudinaryStorage()) 
+    pruebas_en_pdf = models.FileField(upload_to='raw/', blank=True) 
     portada = models.ImageField(upload_to='images/', blank=True)  
 ```
 
@@ -155,15 +165,11 @@ Adicionalmente, si necesitamos manejar archivos PDF o ZIP debemos habilitar la o
 
 ```python
 from django.db import models
-from cloudinary_storage.storage import VideoMediaCloudinaryStorage
-from cloudinary_storage.validators import validate_video
-
 class Noticia(models.Model):
-    titulo = models.CharField(max_length=100)
-    video = models.FileField(
-        upload_to='videos/',
-        blank=True,
-        storage=VideoMediaCloudinaryStorage()
-    )
-    portada = models.ImageField(upload_to='images/', blank=True)
+    titulo = models.CharField(max_length=200)
+    portada = models.ImageField(upload_to="fotos/noticias/", blank=True)
+    pruebas_en_pdf = models.FileField(upload_to='raw/noticias', blank=True)
+    video = models.FileField(upload_to='videos/noticias',blank=True)
+    def __str__(self):
+        return self.titulo
 ```
