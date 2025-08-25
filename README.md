@@ -151,7 +151,7 @@ Adicionalmente, si necesitamos manejar archivos PDF o ZIP debemos habilitar la o
 
 ### Videos
 
-Para videos necesitaremos utilizar el validador `validate_video` para validar las entradas de este campo:
+
 
 ```python
 from django.db import models
@@ -159,12 +159,11 @@ from cloudinary_storage.storage import VideoMediaCloudinaryStorage
 from cloudinary_storage.validators import validate_video
 
 class Noticia(models.Model):
-    name = models.CharField(max_length=100)
+    titulo = models.CharField(max_length=100)
     video = models.FileField(
         upload_to='videos/',
         blank=True,
-        storage=VideoMediaCloudinaryStorage(),
-        validators=[validate_video]
+        storage=VideoMediaCloudinaryStorage()
     )
     portada = models.ImageField(upload_to='images/', blank=True)
 ```
