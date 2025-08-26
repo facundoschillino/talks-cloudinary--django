@@ -115,6 +115,11 @@ if 'RENDER' in os.environ:
 
 ## Uso de archivos media
 
+A la hora de definir nuestro modelo que incluirá archivos MEDIA debemos tener en cuenta 2 cosas:
+
+-Tipo de archivo (Puede ser *ImageField* o *FileField*)
+-Ubicación donde queremos que se guarden (*upload_to*).
+
 ### Imágenes
 
 ```python
@@ -142,7 +147,7 @@ Si queremos transformar la imagen directamente desde Cloudinary:
 
 ### Archivos RAW
 
-Tendremos que aclararle al modelo que queremos emplear el storage `RawMediaCloudinaryStorage`:
+Para los archivos de tipo RAW usaremos el tipo `FileField`.
 
 ```python
 from django.db import models
@@ -161,7 +166,7 @@ Adicionalmente, si necesitamos manejar archivos PDF o ZIP debemos habilitar la o
 
 ### Videos
 
-
+Para manejar videos también nos vamos a valer del tipo `FileField
 
 ```python
 from django.db import models
