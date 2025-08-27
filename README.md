@@ -84,7 +84,7 @@ Ir a la pestaña **API keys**:
 
 <img width="1522" height="947" alt="aplikeys_djangotut" src="https://github.com/user-attachments/assets/91f7df06-01e7-4406-b871-debd502c68dc" />
 
-Y luego definir las variables en Render:
+Y luego definir las variables de entorno. En este caso, lo hacemos en Render:
 
 <img width="1279" height="219" alt="image" src="https://github.com/user-attachments/assets/7dc09857-2838-4ffb-902e-e4a374721223" />
 
